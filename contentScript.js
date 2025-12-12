@@ -2,7 +2,10 @@ chrome.runtime.onMessage.addListener((msg) => {
   console.log(msg);
   switch (msg.data) {
     case 'copying':
-      selectAllPage();
+
+      openMaskingEyesInTikTokOrderDetail();
+      setTimeout(selectAllPage, 1000);
+
       break;
 
     default:
@@ -43,4 +46,22 @@ function selectAllPage() {
         }
       });
   }
+}
+
+
+function openMaskingEyesInTikTokOrderDetail() {
+  document.querySelectorAll('[data-log_click_for="open_phone_plaintext"]').forEach(el => {
+    // Check if click is a function, otherwise dispatch event
+    if (typeof el.click === 'function') {
+      el.click();
+    } else {
+      console.log("el.click is not a function, dispatching event", el);
+      var event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      el.dispatchEvent(event);
+    }
+  });
 }

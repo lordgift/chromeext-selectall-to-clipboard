@@ -4,7 +4,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   await chrome.action.setBadgeText({
     tabId: tab.id,
-    text: 'OK'
+    text: '...'
   });
 
   setTimeout(() => {
@@ -12,6 +12,6 @@ chrome.action.onClicked.addListener(async (tab) => {
       tabId: tab.id,
       text: ''
     });
-  }, 1000);
+  }, 1500);
 
 });
