@@ -4,7 +4,10 @@ chrome.runtime.onMessage.addListener((msg) => {
     case 'copying':
 
       openMaskingEyesInTikTokOrderDetail();
+
       setTimeout(selectAllPage, 1000);
+
+      setTimeout(openOrFindTab, 2000);
 
       break;
 
@@ -63,5 +66,17 @@ function openMaskingEyesInTikTokOrderDetail() {
       });
       el.dispatchEvent(event);
     }
+  });
+}
+
+
+function openOrFindTab() {
+  const tabTitle = 'YOUR_TAB_TITLE';
+  const tabUrl = 'YOUR_TAB_URL';
+
+  chrome.runtime.sendMessage({
+    action: 'openOrFindTab',
+    title: tabTitle,
+    url: tabUrl
   });
 }
