@@ -53,7 +53,9 @@ function selectAllPage() {
 
 
 function openMaskingEyesInTikTokOrderDetail() {
-  document.querySelectorAll('[data-log_click_for="open_phone_plaintext"]').forEach(el => {
+  const maskingEyesButton = document.querySelectorAll('[data-log_click_for="open_phone_plaintext"]');
+  Array.from(maskingEyesButton).slice(0, 2).forEach(el => {
+
     // Check if click is a function, otherwise dispatch event
     if (typeof el.click === 'function') {
       el.click();
