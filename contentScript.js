@@ -4,7 +4,6 @@
 // 
 // 
 
-
 chrome.runtime.onMessage.addListener(async (msg) => {
   console.log(msg);
   switch (msg.data) {
@@ -12,11 +11,11 @@ chrome.runtime.onMessage.addListener(async (msg) => {
 
       await openMaskingEyesInTikTokOrderDetail();
 
-      setTimeout(selectAllPage, 1000);
-
-      setTimeout(openOrFindTab, 2000);
-
-
+      const selectAllResult = await selectAllAndCopy();
+      if (!selectAllResult) {
+        console.error("Failed to select all page");
+        return;
+      }
       recordDataFromOrderDetail().then((val) => {
         console.log(`🎉 ${val}`);
         publishMessageToSubmitForm(val);
@@ -29,7 +28,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
   }
 });
 
-function selectAllPage() {
+async function selectAllAndCopy() {
   var body = document.body;
   var selection;
   var range;
@@ -45,14 +44,15 @@ function selectAllPage() {
     window.focus();
 
     // Modern Clipboard API
-    navigator.clipboard
-      .writeText(selection.toString())
-      .then(() => {
-        console.log("successfully copied");
-      })
-      .catch((err) => {
-        console.error("Fallback failed: ", err);
-      });
+    try {
+      await navigator.clipboard.writeText(selection.toString());
+      console.log("successfully copied");
+      return true;
+    } catch (err) {
+      console.error("Fallback failed: ", err);
+      return false;
+    }
+
   }
 }
 
