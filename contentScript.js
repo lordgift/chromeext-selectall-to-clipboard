@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
   switch (msg.data) {
     case 'copying':
 
-      openMaskingEyesInTikTokOrderDetail();
+      await openMaskingEyesInTikTokOrderDetail();
 
       setTimeout(selectAllPage, 1000);
 
@@ -57,7 +57,7 @@ function selectAllPage() {
 }
 
 
-function openMaskingEyesInTikTokOrderDetail() {
+async function openMaskingEyesInTikTokOrderDetail() {
   const maskingEyesButton = document.querySelectorAll('[data-log_click_for="open_phone_plaintext"]');
   Array.from(maskingEyesButton).slice(0, 2).forEach(el => {
 
@@ -74,8 +74,10 @@ function openMaskingEyesInTikTokOrderDetail() {
       el.dispatchEvent(event);
     }
   });
-}
 
+  // Wait for the UI to update with unmasked data
+  await new Promise(resolve => setTimeout(resolve, 500));
+}
 
 function publishMessageToOpenTab(tabJson) {
   chrome.runtime.sendMessage({
