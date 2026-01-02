@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Select n Copy | LordGift",
   "description": "Easier select all in page then copy into.",
-  "version": "1.0",
+  "version": "1.5",
   "background": {
     "service_worker": "background.js"
   },
@@ -13,10 +13,12 @@
     "activeTab",
     "scripting",
     "clipboardWrite",
+    "clipboardRead",
     "tabs"
   ],
   "host_permissions": [
-    "https://seller-th.tiktok.com/order/detail*"
+    "https://seller-th.tiktok.com/order/detail*",
+    "https://docs.google.com/forms/d/e/*"
   ],
   "commands": {
     "_execute_action": {

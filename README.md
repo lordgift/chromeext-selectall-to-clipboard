@@ -12,5 +12,14 @@ This extension will SELECT ALL text (like ctrl+A) on the whole page then copy it
 To experiment with these samples, please clone this repo and use 'Load Unpacked Extension'.
 Read more on [Development Basics](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked).
 
+
+## Setting Up
+
+add this formular to the top of Google Sheet row in unuse cell to extract image URL from column E to next row below this formular. (may hide this row for avoid annoying)
+
+```formular
+=ARRAYFORMULA(IF(LEN(E2:E), IMAGE(REGEXEXTRACT(E2:E, "https://[^']+")), ""))
+```
+
 ---
 Enhanced from [Oliver Focus Mode](https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/tutorial.focus-mode).

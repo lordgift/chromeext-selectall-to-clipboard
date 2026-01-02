@@ -1,3 +1,8 @@
+// 
+// This is service worker running in background, Debug this on service worker. 
+// 
+// 
+
 chrome.action.onClicked.addListener(async (tab) => {
 
   chrome.tabs.sendMessage(tab.id, { data: 'copying' });
@@ -17,8 +22,22 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'openOrFindTab') {
-    openOrFindTab(request.title, request.url);
+
+  console.log(`observing message : ${request.action}`);
+
+  switch (request.action) {
+    case 'openOrFindTab':
+      openOrFindTab(request.title, request.url);
+      break;
+
+    case 'executeAPI':
+      fetch(request.url)
+        .catch(error => console.error('Error:', error));
+      break;
+
+    default:
+      console.warn("Invalid message triggering.")
+      break;
   }
 });
 
