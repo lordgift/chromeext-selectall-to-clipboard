@@ -16,10 +16,10 @@ chrome.runtime.onMessage.addListener(async (msg) => {
         console.error("Failed to select all page");
         return;
       }
-      recordDataFromOrderDetail().then((val) => {
-        console.log(`🎉 ${val}`);
-        publishMessageToSubmitForm(val);
-      });
+
+      const formUrl = await extractClipboardData()
+
+      console.log(`🎉 ${formUrl}`);
       break;
 
     default:
@@ -87,18 +87,9 @@ function publishMessageToOpenTab(tabJson) {
   });
 }
 
-function publishMessageToSubmitForm(formUrl) {
-  chrome.runtime.sendMessage({
-    action: 'executeAPI',
-    url: formUrl,
-    method: 'GET'
-  });
-}
-
-async function recordDataFromOrderDetail() {
+async function extractClipboardData() {
   try {
     const rawData = await navigator.clipboard.readText();
-
 
     // 1. Order Number: 18 digits right after "Help" or at the start
     const orderNoMatch = rawData.match(/Help\s*\n\s*(\d{18})/i) || rawData.match(/^(\d{18})/m);
@@ -125,44 +116,38 @@ async function recordDataFromOrderDetail() {
       const orderNo = orderNoMatch[1].trim();
       const timeCreated = timeCreatedMatch[1].trim();
       const userName = userNameMatch[1].trim();
-
-      // The first line of the address (Customer Name)
       const customerName = shippingAddressMatch[1].trim();
-
-      // Optional: Log extracted data for debugging
-      console.log(`Order No: ${orderNo}`);
-      console.log(`Customer Name: ${customerName}`);
-
-
-      // 2. Prepare formulas and values
-      const orderNoFormula = `=HYPERLINK("https://seller-th.tiktok.com/order/detail?order_no=${orderNo}&shop_region=TH", "${orderNo}")`;
-      const userProfileFormula = `=HYPERLINK("https://tiktok.com/@${userName}", "${userName}")`;
-
       const paymentMethod = paymentMethodMatch[1].trim();
       const totalPrice = totalPriceMatch[1].trim();
 
+      console.log(`Order No: ${orderNo}`);
 
-      // MOCK apify
-      const apifyFetched = {
-        "nickname": "mockup name",
-        "avatar": "https://lh3.googleusercontent.com/blogger_img_proxy/AEn0k_v914OURMOFkGw9MuHgvOeZJsIepdWQ7nfhVC753DYBUgKSvnn8JCeRTUo-Mw7bPay71wMmugrSkeVTf0LOl1526MpZwNGTklJRl-8fyjO2zduprslFqojel-VjZDYbqL4jN1-IbDhCXy2BkHid-x2yUgCeORuZYbFIg4M=w128-h128-p-k-no-nu"
-      };
-      // const apifyFetched = GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`);
-      const tiktokAvatarFormula = `=IMAGE("${apifyFetched["avatar"]}")`;
-      const tiktokNickname = apifyFetched["nickname"];
+      return await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`).then((apifyFetched) => {
+        console.log("Apify Result:", apifyFetched);
 
-      const formUrl = `https://docs.google.com/forms/d/e/<GG_FORM_ID>/formResponse?entry.xxxx=${timeCreated}&entry.xxxxx=${orderNo}&entry.xxxx=${tiktokNickname}&entry.xxxx=${tiktokAvatarFormula}&entry.xxxx=${tiktokNickname}&entry.xxxx=${customerName}&entry.xxxx=${totalPrice}&entry.xxxxx=${paymentMethod}&submit=Submit`
-      return formUrl;
+        const safeApifyFetched = apifyFetched || {
+          "nickname": "Not Found",
+          "avatar": ""
+        };
+
+        const tiktokAvatarFormula = `=IMAGE("${safeApifyFetched["avatar"]}")`;
+        const tiktokNickname = safeApifyFetched["nickname"];
+
+        const formUrl = `https://docs.google.com/forms/d/e/<GG_FORM_ID>/formResponse?entry.xxxx=${timeCreated}&entry.xxxxx=${orderNo}&entry.xxxx=${tiktokNickname}&entry.xxxx=${tiktokAvatarFormula}&entry.xxxx=${tiktokNickname}&entry.xxxx=${customerName}&entry.xxxx=${totalPrice}&entry.xxxxx=${paymentMethod}&submit=Submit`
+        return formUrl;
+
+      });
+
 
     } else {
       // extracting error
-      let errorMsg = "Could not find all required patterns in the pasted text.\n\n";
+      let errorMsg = "Could not find all required patterns in the pasted text.\n";
       errorMsg += `Order No Found: ${!!orderNoMatch}\n`;
       errorMsg += `Time Created Found: ${!!timeCreatedMatch}\n`;
       errorMsg += `User Name Found: ${!!userNameMatch}\n`;
-      errorMsg += `Customer Name Found: ${!!shippingAddressMatch}`;
-      errorMsg += `Total Price Found: ${!!totalPriceMatch}`;
-      errorMsg += `Payment Method Found: ${!!paymentMethodMatch}`;
+      errorMsg += `Customer Name Found: ${!!shippingAddressMatch}\n`;
+      errorMsg += `Total Price Found: ${!!totalPriceMatch}\n`;
+      errorMsg += `Payment Method Found: ${!!paymentMethodMatch}\n`;
       console.error(errorMsg);
       return null
     }
@@ -173,4 +158,11 @@ async function recordDataFromOrderDetail() {
     return null;
   }
 
+}
+async function GET_TIKTOK_NAME_VIA_APIFY(targetProfile) {
+
+    return {
+      "nickname": "MOCKUP NICKNAME",
+      "avatar": "MOCKUP AVATAR"
+    };
 }
