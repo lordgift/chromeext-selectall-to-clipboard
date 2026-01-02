@@ -20,6 +20,20 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       const formUrl = await extractClipboardData()
 
       console.log(`🎉 ${formUrl}`);
+
+      // Send message to background script to execute the API call (safe from CORS)
+      const response = await chrome.runtime.sendMessage({
+        action: 'hookAPI',
+        url: formUrl,
+        method: 'GET'
+      });
+      console.log("API Execution Result:", response);
+
+      publishMessageToOpenTab({
+        title: '<CHROME TAB TITLE>',
+        url: "<CHROME TAB URL>"
+      });
+
       break;
 
     default:

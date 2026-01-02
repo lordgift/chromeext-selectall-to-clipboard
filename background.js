@@ -30,10 +30,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       openOrFindTab(request.title, request.url);
       break;
 
-    case 'executeAPI':
-      fetch(request.url)
-        .catch(error => console.error('Error:', error));
-      break;
+    case 'hookAPI':
+      fetch(request.url, { method: request.method || 'GET' })
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          console.log('API executed successfully');
+          sendResponse({ success: true });
+        })
+        .catch(error => {
+          console.error('Error executing API:', error);
+          sendResponse({ success: false, error: error.message });
+        });
+      return true; // Keeps the message channel open for sendResponse
 
     default:
       console.warn("Invalid message triggering.")
