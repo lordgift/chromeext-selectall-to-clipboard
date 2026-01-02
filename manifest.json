@@ -18,7 +18,8 @@
   ],
   "host_permissions": [
     "https://seller-th.tiktok.com/order/detail*",
-    "https://docs.google.com/forms/d/e/*"
+    "https://docs.google.com/forms/d/e/*",
+    "https://api.apify.com/v2/acts/*"
   ],
   "commands": {
     "_execute_action": {
