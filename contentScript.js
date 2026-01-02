@@ -159,10 +159,63 @@ async function extractClipboardData() {
   }
 
 }
+
+/**
+ * Executes a synchronous Apify TikTok scraping job using the 
+ * clockworks~tiktok-scraper, replicating the successful cURL command.
+ * * NOTE: This synchronous method is prone to Apps Script timeouts (limit is ~30 seconds).
+ * Use the Asynchronous method (with two functions) for reliable, large-scale use.
+ *
+ * @return The raw JSON response string from Apify.
+ * @customfunction
+ */
 async function GET_TIKTOK_NAME_VIA_APIFY(targetProfile) {
 
+  // const APIFY_TOKEN = '<YOUR APIFY TOKEN>';
+  // const ACTOR_ID = '<YOUR APIFY ACTOR ID>';
+
+
+  // ---------------------
+
+  const APIFY_URL = 'https://api.apify.com/v2/acts/' + ACTOR_ID + '/run-sync-get-dataset-items?token=' + APIFY_TOKEN;
+
+  const actorInput = {
+    "hashtags": [],
+    "profiles": [targetProfile],
+    "scrollPage": false
+  };
+
+  try {
+    return await fetch(APIFY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(actorInput),
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      return response.json();
+    }).then(results => {
+
+      if (results.length > 0 && results[0].authorMeta && results[0].authorMeta.nickName) {
+        return {
+          "nickname": results[0].authorMeta.nickName,
+          "avatar": results[0].authorMeta.avatar
+        };
+      } else {
+        // Return the full JSON for debugging if the name isn't found
+        return null;
+      }
+    });
+
+  } catch (e) {
+    console.log("Apps Script Execution Error: " + e.message);
     return {
-      "nickname": "MOCKUP NICKNAME",
-      "avatar": "MOCKUP AVATAR"
+      "nickname": e.message,
+      "avatar": ""
     };
+  }
 }
