@@ -9,18 +9,25 @@ chrome.runtime.onMessage.addListener(async (msg) => {
   switch (msg.data) {
     case 'copying':
 
+      showLoadingOverlay();
+
+      updateLoadingOverlay("Opening masked eyes");
+
       await openMaskingEyesInTikTokOrderDetail();
 
+      updateLoadingOverlay("Selecting and copying whole text");
       const selectAllResult = await selectAllAndCopy();
       if (!selectAllResult) {
         console.error("Failed to select all page");
         return;
       }
 
+      updateLoadingOverlay("Extracting clipboard");
       const formUrl = await extractClipboardData()
 
       console.log(`🎉 ${formUrl}`);
 
+      updateLoadingOverlay("Submitting form");
       // Send message to background script to execute the API call (safe from CORS)
       const response = await chrome.runtime.sendMessage({
         action: 'hookAPI',
@@ -33,6 +40,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
         title: '<CHROME TAB TITLE>',
         url: "<CHROME TAB URL>"
       });
+      updateLoadingOverlay("Script finished 🎉");
 
       break;
 
@@ -41,6 +49,67 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       break;
   }
 });
+
+function showLoadingOverlay() {
+  let overlay = document.getElementById('loading-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    overlay.style.color = 'white';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.fontSize = '2em';
+    overlay.style.zIndex = '10000';
+    overlay.style.flexDirection = 'column';
+
+    const title = document.createElement('div');
+    title.innerText = 'Processing...';
+    overlay.appendChild(title);
+
+    const detailLine = document.createElement('div');
+    detailLine.id = 'loading-overlay-detail';
+    detailLine.style.fontSize = '18px';
+    detailLine.style.marginTop = '10px';
+    overlay.appendChild(detailLine);
+
+    const closeBtn = document.createElement('div');
+    closeBtn.innerText = 'X';
+    closeBtn.style.position = 'absolute';
+    closeBtn.style.top = '20px';
+    closeBtn.style.right = '20px';
+    closeBtn.style.fontSize = '30px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.fontWeight = 'bold';
+    closeBtn.style.color = 'white';
+    closeBtn.onclick = hideLoadingOverlay;
+    overlay.appendChild(closeBtn);
+
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = 'flex';
+}
+
+function updateLoadingOverlay(message) {
+  const overlayDetail = document.getElementById('loading-overlay-detail');
+  if (overlayDetail) {
+    overlayDetail.innerText = message;
+  }
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+}
+
 
 async function selectAllAndCopy() {
   var body = document.body;
@@ -53,6 +122,7 @@ async function selectAllAndCopy() {
     range.selectNodeContents(body);
     selection.removeAllRanges();
     selection.addRange(range);
+
 
     // Try to focus the window to satisfy Clipboard API requirements
     window.focus();
@@ -136,6 +206,7 @@ async function extractClipboardData() {
 
       console.log(`Order No: ${orderNo}`);
 
+      updateLoadingOverlay("Looking for TikTok Profile");
       return await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`).then((apifyFetched) => {
         console.log("Apify Result:", apifyFetched);
 

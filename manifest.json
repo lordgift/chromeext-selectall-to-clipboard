@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Select n Copy | LordGift",
   "description": "Easier select all in page then copy into.",
-  "version": "1.5",
+  "version": "2.0",
   "background": {
     "service_worker": "background.js"
   },
