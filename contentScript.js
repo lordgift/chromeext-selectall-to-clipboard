@@ -210,32 +210,40 @@ async function extractClipboardData() {
 
       console.log(`Order No: ${orderNo}`);
 
-      if (await isExistOrderNo(orderNo)) {
+      if (await isExistStorageKey(orderNo)) {
         updateLoadingOverlay("❌ Duplicate run this orderNo");
         return null;
       } else {
         await storeOrderNo(orderNo);
       }
 
+      let tiktokAvatarFormula;
+      let tiktokNickname;
+      if (await isExistStorageKey(userName)) {
+        updateLoadingOverlay("✅ Stored profile found, loading from cache");
+        const storedProfile = await getStoredProfile(userName);
+        tiktokAvatarFormula = storedProfile.avatar;
+        tiktokNickname = storedProfile.nickname;
 
+      } else {
+        updateLoadingOverlay("Looking for TikTok Profile");
+        const apifyFetched = await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`).then((apifyFetched) => {
+          console.log("Apify Result:", apifyFetched);
 
-      updateLoadingOverlay("Looking for TikTok Profile");
-      return await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`).then((apifyFetched) => {
-        console.log("Apify Result:", apifyFetched);
+          const safeApifyFetched = apifyFetched || {
+            "nickname": "APIFY not found",
+            "avatar": ""
+          };
 
-        const safeApifyFetched = apifyFetched || {
-          "nickname": "Not Found",
-          "avatar": ""
-        };
+          tiktokAvatarFormula = `=IMAGE("${safeApifyFetched["avatar"]}")`;
+          tiktokNickname = safeApifyFetched["nickname"];
 
-        const tiktokAvatarFormula = `=IMAGE("${safeApifyFetched["avatar"]}")`;
-        const tiktokNickname = safeApifyFetched["nickname"];
+          storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
+        });
+      }
 
-        const formUrl = `https://docs.google.com/forms/d/e/<GG_FORM_ID>/formResponse?entry.xxxx=${timeCreated}&entry.xxxxx=${orderNo}&entry.xxxx=${tiktokNickname}&entry.xxxx=${tiktokAvatarFormula}&entry.xxxx=${tiktokNickname}&entry.xxxx=${customerName}&entry.xxxx=${totalPrice}&entry.xxxxx=${paymentMethod}&submit=Submit`
-        return formUrl;
-
-      });
-
+      const formUrl = `https://docs.google.com/forms/d/e/<GG_FORM_ID>/formResponse?entry.xxxx=${timeCreated}&entry.xxxxx=${orderNo}&entry.xxxx=${tiktokNickname}&entry.xxxx=${tiktokAvatarFormula}&entry.xxxx=${tiktokNickname}&entry.xxxx=${customerName}&entry.xxxx=${totalPrice}&entry.xxxxx=${paymentMethod}&submit=Submit`
+      return formUrl;
 
     } else {
       // extracting error
@@ -326,9 +334,23 @@ async function storeOrderNo(orderNo) {
   });
 }
 
-async function isExistOrderNo(orderNo) {
-  return await chrome.storage.local.get([orderNo]).then((result) => {
-    const isFound = result[orderNo] !== undefined;
+async function isExistStorageKey(key) {
+  return await chrome.storage.local.get([key]).then((result) => {
+    const isFound = result[key] !== undefined;
     return isFound;
+  });
+}
+
+async function storeProfile(username, avatar, nickname) {
+  const value = { avatar: avatar, nickname: nickname };
+  return await chrome.storage.local.set({ [username]: value }).then(() => {
+    console.log("profile is set to storage");
+    return true;
+  });
+}
+
+async function getStoredProfile(username) {
+  return await chrome.storage.local.get([username]).then((result) => {
+    return result[username];
   });
 }
