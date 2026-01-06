@@ -25,6 +25,10 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       updateLoadingOverlay("Extracting clipboard");
       const formUrl = await extractClipboardData()
 
+      if (!formUrl) {
+        return;
+      }
+
       console.log(`🎉 ${formUrl}`);
 
       updateLoadingOverlay("Submitting form");
@@ -206,6 +210,15 @@ async function extractClipboardData() {
 
       console.log(`Order No: ${orderNo}`);
 
+      if (await isExistOrderNo(orderNo)) {
+        updateLoadingOverlay("❌ Duplicate run this orderNo");
+        return null;
+      } else {
+        await storeOrderNo(orderNo);
+      }
+
+
+
       updateLoadingOverlay("Looking for TikTok Profile");
       return await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`).then((apifyFetched) => {
         console.log("Apify Result:", apifyFetched);
@@ -303,4 +316,19 @@ async function GET_TIKTOK_NAME_VIA_APIFY(targetProfile) {
       "avatar": ""
     };
   }
+}
+
+async function storeOrderNo(orderNo) {
+  const value = true;
+  return await chrome.storage.local.set({ [orderNo]: value }).then(() => {
+    console.log("orderNo is set to storage");
+    return true;
+  });
+}
+
+async function isExistOrderNo(orderNo) {
+  return await chrome.storage.local.get([orderNo]).then((result) => {
+    const isFound = result[orderNo] !== undefined;
+    return isFound;
+  });
 }

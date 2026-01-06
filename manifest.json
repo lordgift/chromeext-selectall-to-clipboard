@@ -14,7 +14,8 @@
     "scripting",
     "clipboardWrite",
     "clipboardRead",
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "host_permissions": [
     "https://seller-th.tiktok.com/order/detail*",
