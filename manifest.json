@@ -1,13 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Select n Copy | LordGift",
-  "description": "Easier select all in page then copy into.",
-  "version": "2.0",
+  "name": "Select n Copy for TikTok Seller | LordGift",
+  "description": "Easier copy whole page of TikTok's order detail then extract data and submit to Google Form immediately.",
+  "version": "2.1",
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_icon": "Gemini_Generated_Image_jin6lnjin6lnjin6.png"
+    "default_icon": "select-n-copy-vibrant.png"
+  },
+  "icons": {
+    "16": "select-n-copy-vibrant.png",
+    "32": "select-n-copy-vibrant.png",
+    "48": "select-n-copy-vibrant.png",
+    "128": "select-n-copy-vibrant.png"
   },
   "permissions": [
     "activeTab",
