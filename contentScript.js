@@ -238,7 +238,10 @@ async function extractClipboardData() {
           tiktokAvatarFormula = `=IMAGE("${safeApifyFetched["avatar"]}")`;
           tiktokNickname = safeApifyFetched["nickname"];
 
-          storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
+          // no cache if apifyFetched is null
+          if (apifyFetched) {
+            storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
+          }
         });
       }
 
