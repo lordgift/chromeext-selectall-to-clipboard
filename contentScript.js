@@ -40,10 +40,10 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       });
       console.log("API Execution Result:", response);
 
-      publishMessageToOpenTab({
-        title: '<CHROME TAB TITLE>',
-        url: "<CHROME TAB URL>"
-      });
+      // publishMessageToOpenTab({
+      //   title: '<CHROME TAB TITLE>',
+      //   url: "<CHROME TAB URL>"
+      // });
       updateLoadingOverlay("Script finished 🎉");
 
       break;
