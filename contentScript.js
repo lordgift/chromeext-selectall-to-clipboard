@@ -277,9 +277,9 @@ async function extractClipboardData() {
  */
 async function GET_TIKTOK_NAME_VIA_APIFY(targetProfile) {
 
-  // const APIFY_TOKEN = '<YOUR APIFY TOKEN>';
-  // const ACTOR_ID = '<YOUR APIFY ACTOR ID>';
+  const ACTOR_ID = 'clockworks~tiktok-scraper';
 
+  const APIFY_TOKEN = '<YOUR APIFY TOKEN>';
 
   // ---------------------
 
