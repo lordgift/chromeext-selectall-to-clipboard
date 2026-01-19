@@ -219,11 +219,25 @@ async function extractClipboardData() {
 
       let tiktokAvatarFormula;
       let tiktokNickname;
+
       if (await isExistStorageKey(userName)) {
         updateLoadingOverlay("✅ Stored profile found, loading from cache");
         const storedProfile = await getStoredProfile(userName);
-        tiktokAvatarFormula = storedProfile.avatar;
-        tiktokNickname = storedProfile.nickname;
+
+        const imageExpiresMatch = storedProfile.avatar.match(/x-expires=(\d{10}).*/i);
+        const imageExpiresTime = imageExpiresMatch[1].trim();
+
+        if (isImageCacheExceeded(imageExpiresTime)) {
+          await removeStorageKey(userName);
+          console.log("❌ Image cache expired");
+
+          //recursively call this function
+          await extractClipboardData();
+
+        } else {
+          tiktokAvatarFormula = storedProfile.avatar;
+          tiktokNickname = storedProfile.nickname;
+        }
 
       } else {
         updateLoadingOverlay("Looking for TikTok Profile");
@@ -356,4 +370,17 @@ async function getStoredProfile(username) {
   return await chrome.storage.local.get([username]).then((result) => {
     return result[username];
   });
+}
+
+async function removeStorageKey(key) {
+  return await chrome.storage.local.remove(key).then(() => {
+    console.log(`${key} is removed from storage`);
+    return true;
+  });
+}
+
+function isImageCacheExceeded(inputTimeInSeconds) {
+  const inputTimeInMs = inputTimeInSeconds * 1000;
+  const currentTimeInMs = Date.now();
+  return currentTimeInMs > inputTimeInMs;
 }
