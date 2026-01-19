@@ -164,7 +164,7 @@ async function openMaskingEyesInTikTokOrderDetail() {
   });
 
   // Wait for the UI to update with unmasked data
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 2000));
 }
 
 function publishMessageToOpenTab(tabJson) {
