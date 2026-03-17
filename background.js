@@ -33,6 +33,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case 'hookAPI':
       fetch(request.url, { method: request.method || 'GET' })
         .then(res => {
+
+          console.log(res);
+
           if (!res.ok) throw new Error('Network response was not ok');
           console.log('API executed successfully');
           sendResponse({ success: true });

@@ -40,11 +40,17 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       });
       console.log("API Execution Result:", response);
 
+      if (response.success) {
+        updateLoadingOverlay("Script finished 🎉");
+      } else {
+        updateLoadingOverlay("Script failed ❌❌❌, developer support needed.");
+      }
+
       // publishMessageToOpenTab({
       //   title: '<CHROME TAB TITLE>',
       //   url: "<CHROME TAB URL>"
       // });
-      updateLoadingOverlay("Script finished 🎉");
+
 
       break;
 
@@ -82,6 +88,22 @@ function showLoadingOverlay() {
     detailLine.style.fontSize = '18px';
     detailLine.style.marginTop = '10px';
     overlay.appendChild(detailLine);
+
+    const actionBtn = document.createElement('button');
+    actionBtn.id = 'loading-overlay-action-btn';
+    actionBtn.innerText = 'OK';
+    actionBtn.style.display = 'none';
+    actionBtn.style.marginTop = '20px';
+    actionBtn.style.padding = '10px 24px';
+    actionBtn.style.fontSize = '18px';
+    actionBtn.style.cursor = 'pointer';
+    actionBtn.style.borderRadius = '8px';
+    actionBtn.style.backgroundColor = '#f44336';
+    actionBtn.style.color = 'white';
+    actionBtn.style.border = '3px solid white';
+    actionBtn.style.fontWeight = 'bold';
+    actionBtn.style.display = 'none';
+    overlay.appendChild(actionBtn);
 
     const closeBtn = document.createElement('div');
     closeBtn.innerText = 'X';
@@ -211,8 +233,10 @@ async function extractClipboardData() {
       console.log(`Order No: ${orderNo}`);
 
       if (await isExistStorageKey(orderNo)) {
-        updateLoadingOverlay("❌ Duplicate run this orderNo");
+        updateLoadingOverlay("❌ duplicate run on this orderNo");
+        showDeleteAndReloadButton(orderNo);
         return null;
+
       } else {
         await storeOrderNo(orderNo);
       }
@@ -225,11 +249,11 @@ async function extractClipboardData() {
         const storedProfile = await getStoredProfile(userName);
 
         const imageExpiresMatch = storedProfile.avatar.match(/x-expires=(\d{10}).*/i);
-        const imageExpiresTime = imageExpiresMatch[1].trim();
-
-        if (isImageCacheExceeded(imageExpiresTime)) {
+        if (!imageExpiresMatch || isImageCacheExceeded(imageExpiresMatch[1].trim())) {
           await removeStorageKey(userName);
           console.log("❌ Image cache expired");
+
+          hideLoadingOverlay();
 
           //recursively call this function
           await extractClipboardData();
@@ -383,4 +407,16 @@ function isImageCacheExceeded(inputTimeInSeconds) {
   const inputTimeInMs = inputTimeInSeconds * 1000;
   const currentTimeInMs = Date.now();
   return currentTimeInMs > inputTimeInMs;
+}
+
+function showDeleteAndReloadButton(orderNo) {
+  const actionBtn = document.getElementById('loading-overlay-action-btn');
+  if (actionBtn) {
+    actionBtn.style.display = 'block';
+    actionBtn.innerText = 'Delete & Reload';
+    actionBtn.onclick = async function () {
+      await removeStorageKey(orderNo);
+      window.location.reload();
+    };
+  }
 }
