@@ -253,8 +253,6 @@ async function extractClipboardData() {
           await removeStorageKey(userName);
           console.log("❌ Image cache expired");
 
-          hideLoadingOverlay();
-
           //recursively call this function
           await extractClipboardData();
 
