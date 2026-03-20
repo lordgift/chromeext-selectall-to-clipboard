@@ -19,6 +19,8 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       const selectAllResult = await selectAllAndCopy();
       if (!selectAllResult) {
         console.error("Failed to select all page");
+        updateLoadingOverlay("❌ Failed to select all page.");
+        showDeleteAndReloadButton();
         return;
       }
 
@@ -136,6 +138,19 @@ function hideLoadingOverlay() {
   }
 }
 
+function showDeleteAndReloadButton(orderNo) {
+  const actionBtn = document.getElementById('loading-overlay-action-btn');
+  if (actionBtn) {
+    actionBtn.style.display = 'block';
+    actionBtn.innerText = 'Delete & Reload';
+    actionBtn.onclick = async function () {
+      if (orderNo) {
+        await removeStorageKey(orderNo);
+      }
+      window.location.reload();
+    };
+  }
+}
 
 async function selectAllAndCopy() {
   var body = document.body;
@@ -233,7 +248,7 @@ async function extractClipboardData() {
       console.log(`Order No: ${orderNo}`);
 
       if (await isExistStorageKey(orderNo)) {
-        updateLoadingOverlay("❌ duplicate run on this orderNo");
+        updateLoadingOverlay("❌ Duplicate run on this orderNo");
         showDeleteAndReloadButton(orderNo);
         return null;
       }
@@ -274,7 +289,10 @@ async function extractClipboardData() {
           // no cache if apifyFetched is null
           if (apifyFetched) {
             storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
+          } else {
+            updateLoadingOverlay("❌ Apify not found, no cache save.");
           }
+
         });
       }
 
@@ -403,16 +421,4 @@ function isImageCacheExceeded(inputTimeInSeconds) {
   const inputTimeInMs = inputTimeInSeconds * 1000;
   const currentTimeInMs = Date.now();
   return currentTimeInMs > inputTimeInMs;
-}
-
-function showDeleteAndReloadButton(orderNo) {
-  const actionBtn = document.getElementById('loading-overlay-action-btn');
-  if (actionBtn) {
-    actionBtn.style.display = 'block';
-    actionBtn.innerText = 'Delete & Reload';
-    actionBtn.onclick = async function () {
-      await removeStorageKey(orderNo);
-      window.location.reload();
-    };
-  }
 }
