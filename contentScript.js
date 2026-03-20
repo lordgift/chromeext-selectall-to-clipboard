@@ -248,7 +248,7 @@ async function extractClipboardData() {
         const imageExpiresMatch = storedProfile.avatar.match(/x-expires=(\d{10}).*/i);
         if (!imageExpiresMatch || isImageCacheExceeded(imageExpiresMatch[1].trim())) {
           await removeStorageKey(userName);
-          console.log("❌ Image cache expired");
+          updateLoadingOverlay("❌ Image cache expired");
 
           //recursively call this function
           await extractClipboardData();
