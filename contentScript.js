@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
       const selectAllResult = await selectAllAndCopy();
       if (!selectAllResult) {
         console.error("Failed to select all page");
-        updateLoadingOverlay("❌ Failed to select all page.");
+        updateLoadingOverlay("⚠️ Failed to select all page, please rerun again.");
         showDeleteAndReloadButton();
         return;
       }
