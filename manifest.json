@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Select n Copy for TikTok Seller | LordGift",
   "description": "Easier copy whole page of TikTok's order detail then extract data and submit to Google Form immediately.",
-  "version": "2.5",
+  "version": "2.6",
   "background": {
     "service_worker": "background.js"
   },
