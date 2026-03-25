@@ -266,7 +266,7 @@ async function extractClipboardData() {
           updateLoadingOverlay("❌ Image cache expired");
 
           //recursively call this function
-          await extractClipboardData();
+          return await extractClipboardData();
 
         } else {
           tiktokAvatarFormula = storedProfile.avatar;
@@ -275,25 +275,25 @@ async function extractClipboardData() {
 
       } else {
         updateLoadingOverlay("Looking for TikTok Profile");
-        const apifyFetched = await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`).then((apifyFetched) => {
-          console.log("Apify Result:", apifyFetched);
 
-          const safeApifyFetched = apifyFetched || {
-            "nickname": "APIFY not found",
-            "avatar": ""
-          };
+        const apifyResult = await GET_TIKTOK_NAME_VIA_APIFY(`https://tiktok.com/@${userName}`);
+        console.log("Apify Result:", apifyResult);
 
-          tiktokAvatarFormula = `=IMAGE("${safeApifyFetched["avatar"]}")`;
-          tiktokNickname = safeApifyFetched["nickname"];
+        const safeApifyFetched = apifyResult || {
+          "nickname": "APIFY not found",
+          "avatar": ""
+        };
 
-          // no cache if apifyFetched is null
-          if (apifyFetched) {
-            storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
-          } else {
-            updateLoadingOverlay("❌ Apify not found, no cache save.");
-          }
+        const avatarUrl = safeApifyFetched.avatar || "";
+        tiktokAvatarFormula = `=IMAGE("${avatarUrl}")`;
+        tiktokNickname = safeApifyFetched.nickname || "APIFY not found";
 
-        });
+        // no cache if apifyResult is null
+        if (apifyResult) {
+          await storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
+        } else {
+          updateLoadingOverlay("❌ Apify not found, no cache save.");
+        }
       }
 
       await storeOrderNo(orderNo);
@@ -343,7 +343,16 @@ async function GET_TIKTOK_NAME_VIA_APIFY(targetProfile) {
   const actorInput = {
     "hashtags": [],
     "profiles": [targetProfile],
-    "scrollPage": false
+    "resultsPerPage": 1,
+    "shouldDownloadVideos": false,
+    "shouldDownloadCovers": false,
+    "fetchAuthorStats": false,
+    "scrollPage": false,
+    "downloadData": false,
+    "proxyConfiguration": {
+      "useApifyProxy": true,
+      "groups": ["RESIDENTIAL"]
+    }
   };
 
   try {
@@ -361,10 +370,10 @@ async function GET_TIKTOK_NAME_VIA_APIFY(targetProfile) {
       return response.json();
     }).then(results => {
 
-      if (results.length > 0 && results[0].authorMeta && results[0].authorMeta.nickName) {
+      if (results && results.length > 0 && results[0].authorMeta && results[0].authorMeta.nickName) {
         return {
-          "nickname": results[0].authorMeta.nickName,
-          "avatar": results[0].authorMeta.avatar
+          "nickname": results[0].authorMeta.nickName || "Unknown",
+          "avatar": results[0].authorMeta.avatar || ""
         };
       } else {
         // Return the full JSON for debugging if the name isn't found
