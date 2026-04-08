@@ -247,6 +247,12 @@ async function extractClipboardData() {
 
       console.log(`Order No: ${orderNo}`);
 
+      if (userName.includes('***')) {
+        updateLoadingOverlay("❌ User name is masked (***)");
+        showDeleteAndReloadButton(orderNo);
+        return null;
+      }
+
       if (await isExistStorageKey(orderNo)) {
         updateLoadingOverlay("❌ Duplicate run on this orderNo");
         showDeleteAndReloadButton(orderNo);
