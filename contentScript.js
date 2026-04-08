@@ -248,13 +248,13 @@ async function extractClipboardData() {
       console.log(`Order No: ${orderNo}`);
 
       if (userName.includes('***')) {
-        updateLoadingOverlay("❌ User name is masked (***)");
+        updateLoadingOverlay("⚠️ User name still masked (***), please rerun again.");
         showDeleteAndReloadButton(orderNo);
         return null;
       }
 
       if (await isExistStorageKey(orderNo)) {
-        updateLoadingOverlay("❌ Duplicate run on this orderNo");
+        updateLoadingOverlay("❌ Duplicate run on this Order ID.");
         showDeleteAndReloadButton(orderNo);
         return null;
       }
@@ -269,7 +269,7 @@ async function extractClipboardData() {
         const imageExpiresMatch = storedProfile.avatar.match(/x-expires=(\d{10}).*/i);
         if (!imageExpiresMatch || isImageCacheExceeded(imageExpiresMatch[1].trim())) {
           await removeStorageKey(userName);
-          updateLoadingOverlay("❌ Image cache expired");
+          updateLoadingOverlay("⚠️ Image cache expired.");
 
           //recursively call this function
           return await extractClipboardData();
@@ -298,7 +298,7 @@ async function extractClipboardData() {
         if (apifyResult) {
           await storeProfile(userName, tiktokAvatarFormula, tiktokNickname);
         } else {
-          updateLoadingOverlay("❌ Apify not found, no cache save.");
+          console.warn("Apify not found, no cache save.");
         }
       }
 
